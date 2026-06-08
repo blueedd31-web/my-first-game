@@ -1,28 +1,24 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SimpleCueShoot : MonoBehaviour
+public class CuePower : MonoBehaviour
 {
     public Transform cueStick;
-    public Transform cueBall;
-
-    public Image powerFill;
-
     public float maxForce = 1200f;
     public float chargeSpeed = 800f;
-    public float pullBackDistance = 1.5f;
+
+    public Image powerFill;
 
     private Rigidbody rb;
     private float power;
     private bool charging;
 
-    private Vector3 stickStartPos;
-
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        stickStartPos = cueStick.localPosition;
-        powerFill.fillAmount = 0f;
+
+        if (powerFill != null)
+            powerFill.fillAmount = 0f;
     }
 
     void Update()
@@ -38,40 +34,28 @@ public class SimpleCueShoot : MonoBehaviour
             power += chargeSpeed * Time.deltaTime;
             power = Mathf.Clamp(power, 0, maxForce);
 
-            UpdateUI();
-            MoveStickBack();
+            if (powerFill != null)
+                powerFill.fillAmount = power / maxForce;
         }
 
         if (Input.GetMouseButtonUp(0) && charging)
         {
             Shoot();
             charging = false;
-            ResetStick();
         }
-    }
-
-    void UpdateUI()
-    {
-        powerFill.fillAmount = power / maxForce;
-    }
-
-    void MoveStickBack()
-    {
-        float t = power / maxForce;
-        cueStick.localPosition = stickStartPos - cueStick.forward * pullBackDistance * t;
-    }
-
-    void ResetStick()
-    {
-        cueStick.localPosition = stickStartPos;
     }
 
     void Shoot()
     {
-        Vector3 dir = (cueBall.position - cueStick.position).normalized;
+        if (cueStick == null) return;
+
+        Vector3 dir = (transform.position - cueStick.position).normalized;
+
         rb.AddForce(dir * power);
 
         power = 0f;
-        powerFill.fillAmount = 0f;
+
+        if (powerFill != null)
+            powerFill.fillAmount = 0f;
     }
 }
